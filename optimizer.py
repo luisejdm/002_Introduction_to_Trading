@@ -1,8 +1,11 @@
 import optuna
+optuna.logging.set_verbosity(optuna.logging.WARNING)
+
 import pandas as pd
 
 from config import *
 from backtest import run_backtest
+
 
 def create_objective(data: pd.DataFrame, backtest_config: BacktestConfig, metric: str):
 

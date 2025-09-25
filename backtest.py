@@ -1,6 +1,3 @@
-import pandas as pd
-import numpy as np
-import optuna
 from dataclasses import dataclass
 
 from metrics import *
@@ -8,7 +5,6 @@ from config import BacktestConfig
 from utils import get_portfolio_value
 from indicadores import get_rsi
 
-optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 @dataclass
