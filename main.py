@@ -1,4 +1,35 @@
+from config import *
+from optimizer import optimize_hyperparameters
+
 import pandas as pd
 
-data = pd.read_csv('../Microestructura_y_Sistemas_de_Trading/data/aapl_5m_train.csv').dropna()
-print(data.head())
+data = pd.read_csv('aapl_5m_train.csv')
+
+def main():
+    backtest_config = BacktestConfig(
+        initial_capital = 1_000_000,
+        commission = 0.125/100
+    )
+
+    optimization_config = OptimizationConfig(
+        n_trials = 10,
+        direction = 'maximize',
+        n_jobs = -1,
+        show_progress_bar = True,
+    )
+
+    study = optimize_hyperparameters(
+        data = data,
+        backtest_config = backtest_config,
+        optimization_config = optimization_config,
+        metric = 'sharpe'
+    )
+
+    best_params = study.best_params
+    max_sharpe = study.best_value
+
+    print('Best Parameters:', best_params)
+    print('Max Sharpe Ratio:', max_sharpe)
+
+if __name__ == '__main__':
+    main()

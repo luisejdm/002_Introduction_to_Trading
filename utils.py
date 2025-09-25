@@ -1,5 +1,7 @@
-def get_portfolio_value(capital: float, long_positions: list, short_positions:list, current_price: float, n_shares: int) -> float:
-    """Estimate the portfolio value.
+def get_portfolio_value(capital: float, long_positions: list, short_positions:list,
+                        current_price: float, n_shares: int) -> float:
+    """
+    Estimate the portfolio value.
 
     Args:
         capital (float): The current capital available.
