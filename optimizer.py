@@ -18,10 +18,11 @@ def create_objective(data: pd.DataFrame, backtest_config: BacktestConfig, metric
             'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
             'n_shares': trial.suggest_int('n_shares', 5, 500)
         }
-        results = run_backtest(data, backtest_config, params)
-        return results[metric]
+        metrics, _, _, _, _ = run_backtest(data, backtest_config, params)
+        return metrics[metric]
 
     return objective
+
 
 def optimize_hyperparameters(data: pd.DataFrame, backtest_config: BacktestConfig,
                              optimization_config: OptimizationConfig, metric: str):

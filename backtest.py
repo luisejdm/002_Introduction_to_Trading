@@ -6,7 +6,6 @@ from utils import get_portfolio_value
 from indicadores import get_rsi
 
 
-
 @dataclass
 class Position:
     """
@@ -20,8 +19,11 @@ class Position:
     time: pd.Series
 
 
-def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> dict:
+def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> tuple:
     data = data.copy()
+
+    n_long_trades = 0
+    n_short_trades = 0
 
     # Hyperparameters to optimize
     rsi_window = params['rsi_window']
@@ -73,6 +75,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> d
                     time=row['Datetime']
                 )
                 active_long_positions.append(pos)
+                n_long_trades += 1
 
         value = get_portfolio_value(capital, active_long_positions, [], row.Close, n_shares)
         portfolio_value.append(value)
@@ -91,4 +94,4 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> d
         'sortino': get_sortino(df)
     }
 
-    return metrics
+    return metrics, n_long_trades, n_short_trades, portfolio_value, capital
