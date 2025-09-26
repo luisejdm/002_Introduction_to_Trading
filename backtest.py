@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Union
+
+import pandas as pd
 
 from metrics import *
 from config import BacktestConfig
@@ -10,6 +14,14 @@ from indicadores import get_rsi
 class Position:
     """
     Represents a trading position.
+
+    Attributes:
+        ticker (str): The ticker symbol of the asset.
+        n_shares (int): The number of shares in the position.
+        price (pd.Series): The entry price of the position.
+        sl (float): The stop-loss price.
+        tp (float): The take-profit price.
+        time (pd.Series): The time the position was opened.
     """
     ticker: str
     n_shares: int

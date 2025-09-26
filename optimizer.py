@@ -1,14 +1,16 @@
 import optuna
+
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 import pandas as pd
-
 from config import *
+
 from backtest import run_backtest
 
 
-def create_objective(data: pd.DataFrame, backtest_config: BacktestConfig, metric: str):
-
+def create_objective(
+        data: pd.DataFrame, backtest_config: BacktestConfig, metric: str
+):
     def objective(trial):
         params = {
             'rsi_window': trial.suggest_int('rsi_window', 8, 80),
@@ -24,10 +26,16 @@ def create_objective(data: pd.DataFrame, backtest_config: BacktestConfig, metric
     return objective
 
 
-def optimize_hyperparameters(data: pd.DataFrame, backtest_config: BacktestConfig,
-                             optimization_config: OptimizationConfig, metric: str):
+def optimize_hyperparameters(
+        data: pd.DataFrame, backtest_config: BacktestConfig,
+        optimization_config: OptimizationConfig, metric: str
+):
+    print("\nStarting hyperparameter optimization...\n")
+
     objective = create_objective(data, backtest_config, metric)
     study = optuna.create_study(direction=optimization_config.direction)
-    study.optimize(objective, n_trials=optimization_config.n_trials, n_jobs=optimization_config.n_jobs,
+    study.optimize(objective,
+                   n_trials=optimization_config.n_trials,
+                   n_jobs=optimization_config.n_jobs,
                    show_progress_bar=optimization_config.show_progress_bar)
     return study
