@@ -36,7 +36,7 @@ def main():
 
     best_params = study.best_params
     max_sharpe = study.best_value
-    print_best_params(best_params, 'Test')
+    print_best_params(best_params)
 
     # Evalation on test set
     test_metrics, test_n_long_trades, test_n_short_trades, test_portfolio_value, test_capital = run_backtest(
