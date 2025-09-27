@@ -10,31 +10,38 @@ plt.rcParams['axes.titleweight'] = 'bold'
 plt.rcParams['axes.labelweight'] = 'bold'
 plt.rcParams['grid.alpha'] = 0.3
 
-'''def plot_portfolio_value(portfolio_values: list) -> None:
+
+# Plot training portfolio value
+def plot_training_portfolio_value(portfolio_values: list) -> None:
+    """
+    Plot the portfolio value over time for the training set.
+    Args:
+        portfolio_values: list: portfolio values from the training set
+    Returns:
+
+    """
     plt.figure()
-    plt.plot(portfolio_values, label='Portfolio Value', color='cadetblue')
-    plt.title('Portfolio Value Over Time')
+    plt.plot(portfolio_values, label='Training Portfolio Value', color='cadetblue')
+    plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
-    plt.show()'''
+    plt.legend(loc='best')
+    plt.show()
 
-
-# Plot where test portfolio value and validation portfolio value are shown in the same plot
-
-def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list) -> None:
+def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list,) -> None:
     """
     Plot the portfolio value over time for both test and validation sets.
 
     Args:
-        test_portfolio_value:
-        valid_portfolio_value:
-
+        test_portfolio_value: list: portfolio values from the test set
+        valid_portfolio_value: list: portfolio values from the validation set
     Returns:
+
     """
     plt.figure()
-    plt.plot(test_portfolio_value, label='Test Portfolio Value', color='cadetblue')
-    plt.plot(valid_portfolio_value, label='Validation Portfolio Value', color='coral')
-    plt.title('Portfolio Value Over Time')
+    plt.plot(test_portfolio_value, label='Test Portfolio Value', color='dodgerblue', ls='--')
+    plt.plot(valid_portfolio_value, label='Validation Portfolio Value', color='indianred', ls='-.')
+    plt.title('Portfolio Value (TEST & VALIDATION SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
     plt.legend(loc='best')

@@ -1,6 +1,5 @@
 import optuna
-
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+#optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 import pandas as pd
 from config import *
@@ -33,9 +32,13 @@ def optimize_hyperparameters(
     print("\nStarting hyperparameter optimization...\n")
 
     objective = create_objective(data, backtest_config, metric)
-    study = optuna.create_study(direction=optimization_config.direction)
-    study.optimize(objective,
-                   n_trials=optimization_config.n_trials,
-                   n_jobs=optimization_config.n_jobs,
-                   show_progress_bar=optimization_config.show_progress_bar)
+    study = optuna.create_study(
+        direction=optimization_config.direction, study_name='Hyperparameter Optimization'
+    )
+    study.optimize(
+        objective,
+        n_trials=optimization_config.n_trials,
+        n_jobs=optimization_config.n_jobs,
+        show_progress_bar=optimization_config.show_progress_bar
+    )
     return study

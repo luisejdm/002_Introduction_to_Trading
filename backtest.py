@@ -1,10 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Union
-
 import pandas as pd
 
-from metrics import *
+from metrics import get_sharpe, get_sortino
 from config import BacktestConfig
 from utils import get_portfolio_value
 from indicadores import get_rsi
@@ -43,16 +40,16 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     rsi_upper = params['rsi_upper']
     stop_loss = params['stop_loss']
     take_profit = params['take_profit']
-    n_shares = params['n_shares']
+    n_shares_param = params['n_shares']
 
     rsi = get_rsi(data, rsi_window)
+    data['rsi'] = rsi
     data['buy_signal'] = rsi < rsi_lower
     data['sell_signal'] = rsi > rsi_upper
+    data = data.dropna().reset_index(drop=True)
 
-    data = data.dropna()
-
-    capital = config.initial_capital
-    commision = config.commission
+    capital = float(config.initial_capital)
+    commision = float(config.commission)
 
     portfolio_value = [capital]
     active_long_positions: list[Position] = []
@@ -60,44 +57,46 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
 
     # Start backtesting
     for i, row in data.iterrows():
+        price = row.Close
         # -- LONG ACTIVE ORDERS -- #
         for position in active_long_positions.copy():
             # Stop Loss or take profit Check
-            if row.Close > position.tp or row.Close < position.sl:
+            if price > position.tp or price < position.sl:
                 # Add profits / losses to capital
-                capital += row.Close * position.n_shares * (1-commision)
+                capital += price * position.n_shares * (1-commision)
                 #Remove position from active pos
                 active_long_positions.remove(position)
 
         # -- LONG -- #
         # Check Signal
         if row.buy_signal:
-            cost = row.Close * n_shares * (1 + commision)
+            cost = price * n_shares_param * (1+commision)
             # Do we have enough capital cash?
             if capital > cost:
                 # Discount cash
                 capital -= cost
                 # Add position to portfolio
                 pos = Position(
-                    ticker='AAPL',
-                    n_shares=n_shares,
-                    price=row['Close'],
-                    sl=row['Close'] * (1 - stop_loss),
-                    tp=row['Close'] * (1 + take_profit),
+                    ticker='BTCUSDT',
+                    n_shares=n_shares_param,
+                    price=price,
+                    sl=price * (1-stop_loss),
+                    tp=price * (1+take_profit),
                     time=row['Datetime']
                 )
                 active_long_positions.append(pos)
                 n_long_trades += 1
 
-        value = get_portfolio_value(capital, active_long_positions, [], row.Close, n_shares)
-        portfolio_value.append(value)
+        current_value = get_portfolio_value(capital, active_long_positions, active_short_positions, price)
+        portfolio_value.append(current_value)
 
     #At the end of the backtesting, we should close all active positions
-    capital += row.Close * len(active_long_positions) * n_shares * (1-commision)
+    last_price = data.iloc[-1].Close
+    for position in active_long_positions:
+        capital += last_price * position.n_shares * (1-commision)
     active_long_positions = []
 
-    df = pd.DataFrame()
-    df['Value'] = portfolio_value
+    df = pd.DataFrame({'Value': portfolio_value})
     df['rets'] = df.Value.pct_change()
     df.dropna(inplace=True)
 

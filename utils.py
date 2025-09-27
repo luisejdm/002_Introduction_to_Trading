@@ -39,7 +39,7 @@ def clean_split_data(
 
 def get_portfolio_value(
         capital: float, long_positions: list, short_positions:list,
-        current_price: float, n_shares: int
+        current_price: float
 ) -> float:
     """
     Estimate the portfolio value.
@@ -49,11 +49,15 @@ def get_portfolio_value(
         long_positions (list): A list of active long positions.
         short_positions (list): A list of active short positions.
         current_price (float): The current market price of the asset.
-        n_shares (int): The number of shares held in each position.
 
     Returns:
         float: The total portfolio value.
     """
     value = capital
-    value += len(long_positions) * n_shares * current_price
+    # Long positions value
+    for position in long_positions:
+        value += position.n_shares * current_price
+
+    # Short positions value
+
     return value
