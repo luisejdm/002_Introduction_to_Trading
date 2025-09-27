@@ -22,7 +22,7 @@ class Position:
     """
     ticker: str
     n_shares: int
-    price: pd.Series
+    price: float
     sl: float
     tp: float
     time: pd.Series
@@ -30,6 +30,7 @@ class Position:
 
 def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> tuple:
     data = data.copy()
+    data['Close'] = data['Close'].astype(float)
 
     n_long_trades = 0
     n_short_trades = 0
@@ -42,11 +43,10 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     take_profit = params['take_profit']
     n_shares_param = params['n_shares']
 
-    rsi = get_rsi(data, rsi_window)
-    data['rsi'] = rsi
-    data['buy_signal'] = rsi < rsi_lower
-    data['sell_signal'] = rsi > rsi_upper
-    data = data.dropna().reset_index(drop=True)
+    data['rsi'] = get_rsi(data, rsi_window)
+    data = data.dropna(subset=['rsi']).reset_index(drop=True)
+    data['buy_signal'] = data['rsi'] < rsi_lower
+    data['sell_signal'] = data['rsi'] > rsi_upper
 
     capital = float(config.initial_capital)
     commision = float(config.commission)
@@ -72,7 +72,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
         if row.buy_signal:
             cost = price * n_shares_param * (1+commision)
             # Do we have enough capital cash?
-            if capital > cost:
+            if capital >= cost:
                 # Discount cash
                 capital -= cost
                 # Add position to portfolio
@@ -101,8 +101,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     df.dropna(inplace=True)
 
     metrics = {
-        'sharpe': get_sharpe(df),
-        'sortino': get_sortino(df)
+        'Sharpe': get_sharpe(df),
+        'Sortino': get_sortino(df)
     }
 
     return metrics, n_long_trades, n_short_trades, portfolio_value, capital

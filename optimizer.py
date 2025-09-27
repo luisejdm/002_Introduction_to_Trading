@@ -1,5 +1,5 @@
 import optuna
-#optuna.logging.set_verbosity(optuna.logging.WARNING)
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 import pandas as pd
 from config import *
@@ -17,7 +17,7 @@ def create_objective(
             'rsi_upper': trial.suggest_int('rsi_upper', 65, 95),
             'stop_loss': trial.suggest_float('stop_loss', 0.01, 0.15),
             'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
-            'n_shares': trial.suggest_int('n_shares', 5, 500)
+            'n_shares': trial.suggest_int('n_shares', 1, 10)
         }
         metrics, _, _, _, _ = run_backtest(data, backtest_config, params)
         return metrics[metric]

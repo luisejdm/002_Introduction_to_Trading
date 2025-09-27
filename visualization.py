@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-
 sns.set_theme()
 
 plt.rcParams['figure.figsize'] = [12, 6]
@@ -21,7 +21,7 @@ def plot_training_portfolio_value(portfolio_values: list) -> None:
 
     """
     plt.figure()
-    plt.plot(portfolio_values, label='Training Portfolio Value', color='cadetblue')
+    plt.plot(portfolio_values, label='Training Portfolio Value', color='#305556')
     plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
@@ -38,10 +38,16 @@ def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list
     Returns:
 
     """
+    test_values = np.array(test_portfolio_value)
+    valid_values = np.array(valid_portfolio_value)
+
+    valid_adjusted = valid_values - valid_values[0] + test_values[-1]
+    combined_values = np.concatenate([test_values, valid_adjusted[1:]])
+
     plt.figure()
-    plt.plot(test_portfolio_value, label='Test Portfolio Value', color='dodgerblue', ls='--')
-    plt.plot(valid_portfolio_value, label='Validation Portfolio Value', color='indianred', ls='-.')
-    plt.title('Portfolio Value (TEST & VALIDATION SET)')
+    plt.plot(np.arange(len(test_values)), test_values, label='Test', color='#23698C')
+    plt.plot(np.arange(len(test_values)-1, len(combined_values)), combined_values[len(test_values)-1:], label='Validation', color='#277138')
+    plt.title('Portfolio Value (TEST & VALIDATION SETS)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
     plt.legend(loc='best')

@@ -11,7 +11,7 @@ data = pd.read_csv('Binance_BTCUSDT_1h.csv')
 train_data, test_data, validation_data = clean_split_data(data, 0.6, 0.2, 0.2)
 
 initial_capital = 1_000_000
-optimization_metric = 'sharpe'
+optimization_metric = 'Sortino'
 
 def main():
     # ---- Backtest and optimization configurations
@@ -23,7 +23,7 @@ def main():
         n_trials=50,
         direction='maximize',
         n_jobs=-1,
-        show_progress_bar=False,
+        show_progress_bar=True,
     )
 
     # ---- Optimize hyperparameters
@@ -54,7 +54,7 @@ def main():
     )
     plot_training_portfolio_value(train_portfolio_value)
 
-    # ---- Evalation on test set
+    # ---- Evaluation on test set
     test_backtest_config = BacktestConfig(
         initial_capital = initial_capital, # Start with the initial capital
         commission = 0.125 / 100
