@@ -38,14 +38,9 @@ This repository aims to the process of designing, implementing, and analyzing tr
 - **Primary language:** Python
 - Key libraries (suggested): pandas, numpy, matplotlib, ta-lib, scipy, scikit-learn, jupyter
 
-## Installation
+## Install requirements
 
 ```bash
-# Clone the repository
-git clone https://github.com/luisejdm/002_Introduction_to_Trading.git
-cd 002_Introduction_to_Trading
-
-# Install requirements
 pip install -r requirements.txt
 ```
 
