@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pandas as pd
 
-from metrics import get_sharpe, get_sortino
+from metrics import get_sharpe, get_sortino, get_win_rate
 from config import BacktestConfig
 from utils import get_portfolio_value
 from indicators import get_rsi, get_ema_signals, get_macd
@@ -19,6 +19,8 @@ class Position:
         sl (float): The stop-loss price.
         tp (float): The take-profit price.
         time (pd.Series): The time the position was opened.
+        is_win (bool): Indicates if the position was closed at a profit.
+        exit_price (float): The price at which the position was closed.
     """
     ticker: str
     quantity: float
@@ -26,6 +28,8 @@ class Position:
     sl: float
     tp: float
     time: pd.Series
+    is_win: bool = None
+    exit_price: float = None
 
 
 def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> tuple:
@@ -34,6 +38,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
 
     n_long_trades = 0
     n_short_trades = 0
+    closed_long_positions: list[Position] = []
+    closed_short_positions: list[Position] = []
 
     # Hyperparameters to optimize
     rsi_window = params['rsi_window']
@@ -92,9 +98,12 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
             # Stop Loss or take profit Check
             if price > position.tp or price < position.sl:
                 # Add profits / losses to capital
+                position.exit_price = price
+                position.is_win = price > position.price # True if we closed with profit
                 capital += price * position.quantity * (1-commission)
                 #Remove position from active pos
                 active_long_positions.remove(position)
+                closed_long_positions.append(position)
 
         # -- LONG -- #
         # Check Signal
@@ -105,7 +114,6 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
             # Do we have enough capital cash?
             if capital >= cost:
                 # Discount cash
-                cost = quantity * price * (1+commission)
                 capital -= cost
                 # Add position to portfolio
                 pos = Position(
@@ -125,7 +133,10 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     #At the end of the backtesting, we should close all active positions
     last_price = data.iloc[-1].Close
     for position in active_long_positions:
+        position.exit_price = last_price
+        position.is_win = last_price > position.price
         capital += last_price * position.quantity * (1-commission)
+        closed_long_positions.append(position)
     active_long_positions = []
 
     df = pd.DataFrame({'Value': portfolio_value})
@@ -134,7 +145,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
 
     metrics = {
         'Sharpe': get_sharpe(df),
-        'Sortino': get_sortino(df)
+        'Sortino': get_sortino(df),
+        'Win rate on long positions': get_win_rate(closed_long_positions)
     }
 
     return metrics, n_long_trades, n_short_trades, portfolio_value, capital

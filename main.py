@@ -11,7 +11,7 @@ data = pd.read_csv('Binance_BTCUSDT_1h.csv')
 train_data, test_data, validation_data = clean_split_data(data, 0.6, 0.2, 0.2)
 
 initial_capital = 1_000_000
-optimization_metric = 'Sharpe'
+optimization_metric = 'Sortino'
 
 def main():
     # ---- Backtest and optimization configurations

@@ -40,3 +40,19 @@ def get_sortino(data: pd.DataFrame) -> float:
     annual_down_risk = down_risk * np.sqrt(365*24)
 
     return annual_rets / annual_down_risk if annual_std != 0 else 0
+
+
+def get_win_rate(closed_positions: list) -> float:
+    """
+    Calculate the win rate of trades.
+    Args:
+        closed_positions (list): A list of the closed positions.
+
+    Returns:
+        win_rate (float): The win rate of the trades.
+    """
+    if not closed_positions:
+        return 0
+
+    n_wins = sum(1 for pos in closed_positions if pos.is_win)
+    return n_wins / len(closed_positions)
