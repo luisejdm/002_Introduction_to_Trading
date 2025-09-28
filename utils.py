@@ -56,7 +56,7 @@ def get_portfolio_value(
     value = capital
     # Long positions value
     for position in long_positions:
-        value += position.n_shares * current_price
+        value += position.quantity * current_price
 
     # Short positions value
 

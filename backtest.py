@@ -4,7 +4,7 @@ import pandas as pd
 from metrics import get_sharpe, get_sortino
 from config import BacktestConfig
 from utils import get_portfolio_value
-from indicadores import get_rsi
+from indicators import get_rsi, get_ema_signals, get_macd
 
 
 @dataclass
@@ -14,14 +14,14 @@ class Position:
 
     Attributes:
         ticker (str): The ticker symbol of the asset.
-        n_shares (int): The number of shares in the position.
+        quantity (float): The number of shares in the position.
         price (pd.Series): The entry price of the position.
         sl (float): The stop-loss price.
         tp (float): The take-profit price.
         time (pd.Series): The time the position was opened.
     """
     ticker: str
-    n_shares: int
+    quantity: float
     price: float
     sl: float
     tp: float
@@ -39,17 +39,46 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     rsi_window = params['rsi_window']
     rsi_lower = params['rsi_lower']
     rsi_upper = params['rsi_upper']
+
+    ema_short_window = params['ema_short_window']
+    ema_long_window = params['ema_long_window']
+
+    macd_short_window = params['macd_short_window']
+    macd_long_window = params['macd_long_window']
+    macd_signal_window = params['macd_signal_window']
+
     stop_loss = params['stop_loss']
     take_profit = params['take_profit']
-    n_shares_param = params['n_shares']
+    capital_fraction = params['capital_fraction']
 
-    data['rsi'] = get_rsi(data, rsi_window)
-    data = data.dropna(subset=['rsi']).reset_index(drop=True)
-    data['buy_signal'] = data['rsi'] < rsi_lower
-    data['sell_signal'] = data['rsi'] > rsi_upper
+    # Calculate indicators and signals
+    rsi = get_rsi(data, rsi_window)
+    ema_buy, ema_sell = get_ema_signals(data,
+                                        ema_short_window,
+                                        ema_long_window)
+    macd_buy, macd_sell = get_macd(data,
+                                   macd_short_window,
+                                   macd_long_window,
+                                   macd_signal_window)
+
+    data['rsi_buy'] = rsi < rsi_lower
+    data['rsi_sell'] = rsi > rsi_upper
+
+    data['ema_buy'] = ema_buy
+    data['ema_sell'] = ema_sell
+
+    data['macd_buy'] = macd_buy
+    data['macd_sell'] = macd_sell
+
+    data['buy_signal'] = (data[['rsi_buy', 'ema_buy', 'macd_buy']].sum(axis=1) >= 2)
+    data['sell_signal'] = (data[['rsi_sell', 'ema_sell', 'macd_sell']].sum(axis=1) >= 2)
+
+    data = data.dropna(
+        subset=['rsi_buy', 'rsi_sell', 'ema_buy', 'ema_sell', 'macd_buy', 'macd_sell']
+    ).reset_index(drop=True)
 
     capital = float(config.initial_capital)
-    commision = float(config.commission)
+    commission = float(config.commission)
 
     portfolio_value = [capital]
     active_long_positions: list[Position] = []
@@ -63,22 +92,25 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
             # Stop Loss or take profit Check
             if price > position.tp or price < position.sl:
                 # Add profits / losses to capital
-                capital += price * position.n_shares * (1-commision)
+                capital += price * position.quantity * (1-commission)
                 #Remove position from active pos
                 active_long_positions.remove(position)
 
         # -- LONG -- #
         # Check Signal
         if row.buy_signal:
-            cost = price * n_shares_param * (1+commision)
+            # Cacluate BTC position size based on capital fraction
+            quantity = (capital * capital_fraction) / price
+            cost = quantity * price * (1+commission)
             # Do we have enough capital cash?
             if capital >= cost:
                 # Discount cash
+                cost = quantity * price * (1+commission)
                 capital -= cost
                 # Add position to portfolio
                 pos = Position(
                     ticker='BTCUSDT',
-                    n_shares=n_shares_param,
+                    quantity=quantity,
                     price=price,
                     sl=price * (1-stop_loss),
                     tp=price * (1+take_profit),
@@ -93,7 +125,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     #At the end of the backtesting, we should close all active positions
     last_price = data.iloc[-1].Close
     for position in active_long_positions:
-        capital += last_price * position.n_shares * (1-commision)
+        capital += last_price * position.quantity * (1-commission)
     active_long_positions = []
 
     df = pd.DataFrame({'Value': portfolio_value})

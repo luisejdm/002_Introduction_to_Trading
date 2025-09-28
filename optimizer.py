@@ -12,12 +12,21 @@ def create_objective(
 ):
     def objective(trial):
         params = {
-            'rsi_window': trial.suggest_int('rsi_window', 8, 80),
+            'rsi_window': trial.suggest_int('rsi_window', 8, 30),
             'rsi_lower': trial.suggest_int('rsi_lower', 5, 35),
             'rsi_upper': trial.suggest_int('rsi_upper', 65, 95),
+
+            'ema_short_window': trial.suggest_int('ema_short_window', 5, 20),
+            'ema_long_window': trial.suggest_int('ema_long_window', 21, 100),
+
+            'macd_short_window': trial.suggest_int('macd_short_window', 8, 20),
+            'macd_long_window': trial.suggest_int('macd_long_window', 21, 50),
+            'macd_signal_window': trial.suggest_int('macd_signal_window', 5, 20),
+
             'stop_loss': trial.suggest_float('stop_loss', 0.01, 0.15),
             'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
-            'n_shares': trial.suggest_int('n_shares', 1, 10)
+            'capital_fraction': trial.suggest_float('capital_fraction', 0.01, 0.3)
+            #'n_shares': trial.suggest_int('n_shares', 1, 50)
         }
         metrics, _, _, _, _ = run_backtest(data, backtest_config, params)
         return metrics[metric]
