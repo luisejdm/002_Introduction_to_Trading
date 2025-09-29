@@ -4,7 +4,7 @@ import numpy as np
 
 def get_sharpe(data: pd.DataFrame) -> float:
     """
-    Calculate the Sharpe ratio of a portfolio.
+    Calculate the Sharpe ratio of the portfolio.
 
     Args:
         data (pd.DataFrame): A DataFrame containing the portfolio values over time.
@@ -23,7 +23,7 @@ def get_sharpe(data: pd.DataFrame) -> float:
 
 def get_sortino(data: pd.DataFrame) -> float:
     """
-    Calculate the Sortino ratio of a portfolio.
+    Calculate the Sortino ratio of the portfolio.
 
     Args:
         data (pd.DataFrame): A DataFrame containing the portfolio values over time.
@@ -44,7 +44,7 @@ def get_sortino(data: pd.DataFrame) -> float:
 
 def get_win_rate(closed_positions: list) -> float:
     """
-    Calculate the win rate of trades.
+    Calculate the win rate of trades of the portfolio.
     Args:
         closed_positions (list): A list of the closed positions.
 
@@ -56,3 +56,24 @@ def get_win_rate(closed_positions: list) -> float:
 
     n_wins = sum(1 for pos in closed_positions if pos.is_win)
     return n_wins / len(closed_positions)
+
+
+def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
+    """
+    Calculate the Calmar ratio of the portfolio.
+    Args:
+        data (pd.DataFrame): A DataFrame containing the portfolio values over time.
+        periods_per_year (int): Number of periods in a year. Default is 365*24 for hourly data.
+
+    Returns:
+        calmar_ratio (float): The Calmar ratio of the portfolio.
+    """
+    total_return = data['Value'].iloc[-1] / data['Value'].iloc[0] - 1
+    n_years = len(data) / periods_per_year
+    cagr = (1 + total_return) ** (1 / n_years) - 1
+
+    roll_max = data['Value'].cummax()
+    drawdown = (data['Value'] - roll_max) / roll_max
+    max_drawdown = drawdown.min()
+
+    return cagr / abs(max_drawdown) if max_drawdown != 0 else 0

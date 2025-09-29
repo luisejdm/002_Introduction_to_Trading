@@ -21,7 +21,7 @@ def plot_training_portfolio_value(portfolio_values: list) -> None:
 
     """
     plt.figure()
-    plt.plot(portfolio_values, label='Training Portfolio Value', color='#305556')
+    plt.plot(portfolio_values, label='Training Portfolio Value', color='#13283A')
     plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
@@ -45,8 +45,8 @@ def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list
     combined_values = np.concatenate([test_values, valid_adjusted[1:]])
 
     plt.figure()
-    plt.plot(np.arange(len(test_values)), test_values, label='Test', color='#23698C')
-    plt.plot(np.arange(len(test_values)-1, len(combined_values)), combined_values[len(test_values)-1:], label='Validation', color='#277138')
+    plt.plot(np.arange(len(test_values)), test_values, label='Test', color='#2E76AC')
+    plt.plot(np.arange(len(test_values)-1, len(combined_values)), combined_values[len(test_values)-1:], label='Validation', color='#218239')
     plt.title('Portfolio Value (TEST & VALIDATION SETS)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')

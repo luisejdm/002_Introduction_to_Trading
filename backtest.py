@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pandas as pd
 
-from metrics import get_sharpe, get_sortino, get_win_rate
+from metrics import get_sharpe, get_sortino, get_win_rate, get_calmar
 from config import BacktestConfig
 from utils import get_portfolio_value
 from indicators import get_rsi, get_ema_signals, get_macd
@@ -146,6 +146,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     metrics = {
         'Sharpe': get_sharpe(df),
         'Sortino': get_sortino(df),
+        'Calmar': get_calmar(df),
         'Win rate on long positions': get_win_rate(closed_long_positions)
     }
 
