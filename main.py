@@ -12,6 +12,7 @@ train_data, test_data, validation_data = clean_split_data(data, 0.6, 0.2, 0.2)
 
 initial_capital = 1_000_000
 optimization_metric = 'Calmar' # 'Sharpe', 'Sortino', 'Calmar'
+n_trials = 50
 
 def main():
     # ---- Backtest and optimization configurations
@@ -20,7 +21,7 @@ def main():
         commission = 0.125/100
     )
     optimization_config = OptimizationConfig(
-        n_trials=200,
+        n_trials=n_trials,
         direction='maximize',
         n_jobs=-1,
         show_progress_bar=True,
@@ -67,7 +68,7 @@ def main():
     print_metrics(
         test_metrics, initial_capital, test_capital, 'test',
         test_n_long_trades, test_n_short_trades
-    ) # Initial capital from the backtest config
+    )
 
     # ---- Evaluation on validation set
     valid_backtest_config = BacktestConfig(

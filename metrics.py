@@ -5,7 +5,6 @@ import numpy as np
 def get_sharpe(data: pd.DataFrame) -> float:
     """
     Calculate the Sharpe ratio of the portfolio.
-
     Args:
         data (pd.DataFrame): A DataFrame containing the portfolio values over time.
 
@@ -24,7 +23,6 @@ def get_sharpe(data: pd.DataFrame) -> float:
 def get_sortino(data: pd.DataFrame) -> float:
     """
     Calculate the Sortino ratio of the portfolio.
-
     Args:
         data (pd.DataFrame): A DataFrame containing the portfolio values over time.
 
@@ -42,20 +40,19 @@ def get_sortino(data: pd.DataFrame) -> float:
     return annual_rets / annual_down_risk if annual_std != 0 else 0
 
 
-def get_win_rate(closed_positions: list) -> float:
+def get_maximum_drawdown(data: pd.DataFrame) -> float:
     """
-    Calculate the win rate of trades of the portfolio.
+    Calculate the maximum drawdown of the portfolio.
     Args:
-        closed_positions (list): A list of the closed positions.
+        data (pd.DataFrame): A DataFrame containing the portfolio values over time.
 
     Returns:
-        win_rate (float): The win rate of the trades.
+        float: The maximum drawdown of the portfolio.
     """
-    if not closed_positions:
-        return 0
-
-    n_wins = sum(1 for pos in closed_positions if pos.is_win)
-    return n_wins / len(closed_positions)
+    roll_max = data['Value'].cummax()
+    drawdown = (data['Value'] - roll_max) / roll_max
+    max_drawdown = drawdown.min()
+    return abs(max_drawdown)
 
 
 def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
@@ -77,3 +74,19 @@ def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
     max_drawdown = drawdown.min()
 
     return cagr / abs(max_drawdown) if max_drawdown != 0 else 0
+
+
+def get_win_rate(closed_positions: list) -> float:
+    """
+    Calculate the win rate of trades of the portfolio.
+    Args:
+        closed_positions (list): A list of the closed positions.
+
+    Returns:
+        win_rate (float): The win rate of the trades.
+    """
+    if not closed_positions:
+        return 0
+
+    n_wins = sum(1 for pos in closed_positions if pos.is_win)
+    return n_wins / len(closed_positions)

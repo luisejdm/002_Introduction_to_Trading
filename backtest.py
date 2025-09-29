@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pandas as pd
 
-from metrics import get_sharpe, get_sortino, get_win_rate, get_calmar
+from metrics import get_sharpe, get_sortino, get_maximum_drawdown, get_calmar, get_win_rate
 from config import BacktestConfig
 from utils import get_portfolio_value
 from indicators import get_rsi, get_ema_signals, get_macd
@@ -67,6 +67,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                                    macd_long_window,
                                    macd_signal_window)
 
+    # Add signals to DataFrame
     data['rsi_buy'] = rsi < rsi_lower
     data['rsi_sell'] = rsi > rsi_upper
 
@@ -79,13 +80,16 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     data['buy_signal'] = (data[['rsi_buy', 'ema_buy', 'macd_buy']].sum(axis=1) >= 2)
     data['sell_signal'] = (data[['rsi_sell', 'ema_sell', 'macd_sell']].sum(axis=1) >= 2)
 
+    # Drop rows with NaN values in signal columns
     data = data.dropna(
         subset=['rsi_buy', 'rsi_sell', 'ema_buy', 'ema_sell', 'macd_buy', 'macd_sell']
     ).reset_index(drop=True)
 
+    # Initial capital and commission
     capital = float(config.initial_capital)
     commission = float(config.commission)
 
+    # Initialize portfolio
     portfolio_value = [capital]
     active_long_positions: list[Position] = []
     active_short_positions: list[Position] = []
@@ -93,7 +97,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     # Start backtesting
     for i, row in data.iterrows():
         price = row.Close
-        # -- LONG ACTIVE ORDERS -- #
+        # ---- LONG ACTIVE ORDERS
         for position in active_long_positions.copy():
             # Stop Loss or take profit Check
             if price > position.tp or price < position.sl:
@@ -101,12 +105,13 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                 position.exit_price = price
                 position.is_win = price > position.price # True if we closed with profit
                 capital += price * position.quantity * (1-commission)
-                #Remove position from active pos
+                # Remove position from active positions and add to closed positions
                 active_long_positions.remove(position)
                 closed_long_positions.append(position)
 
-        # -- LONG -- #
-        # Check Signal
+        # ---- SHORT ACTIVE ORDERS
+
+        # ---- CHECK FOR NEW LONG ORDERS
         if row.buy_signal:
             # Cacluate BTC position size based on capital fraction
             quantity = (capital * capital_fraction) / price
@@ -127,6 +132,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                 active_long_positions.append(pos)
                 n_long_trades += 1
 
+        # ---- CHECK FOR NEW SHORT ORDERS
+
         current_value = get_portfolio_value(capital, active_long_positions, active_short_positions, price)
         portfolio_value.append(current_value)
 
@@ -146,6 +153,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     metrics = {
         'Sharpe': get_sharpe(df),
         'Sortino': get_sortino(df),
+        'Maximum Drawdown': get_maximum_drawdown(df),
         'Calmar': get_calmar(df),
         'Win rate on long positions': get_win_rate(closed_long_positions)
     }
