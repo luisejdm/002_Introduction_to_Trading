@@ -59,5 +59,7 @@ def get_portfolio_value(
         value += position.quantity * current_price
 
     # Short positions value
+    for position in short_positions:
+        value += position.quantity * (position.price - current_price)
 
     return value

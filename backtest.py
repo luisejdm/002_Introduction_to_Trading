@@ -21,6 +21,7 @@ class Position:
         time (pd.Series): The time the position was opened.
         is_win (bool): Indicates if the position was closed at a profit.
         exit_price (float): The price at which the position was closed.
+        type (str): The type of position ('long' or 'short').
     """
     ticker: str
     quantity: float
@@ -30,6 +31,7 @@ class Position:
     time: pd.Series
     is_win: bool = None
     exit_price: float = None
+    type: str = None
 
 
 def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> tuple:
@@ -102,21 +104,34 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
             # Stop Loss or take profit Check
             if price > position.tp or price < position.sl:
                 # Add profits / losses to capital
-                position.exit_price = price
-                position.is_win = price > position.price # True if we closed with profit
                 capital += price * position.quantity * (1-commission)
+                # Register exit price and if it was a win
+                position.exit_price = price
+                position.is_win = price > position.price  # True if we closed with profit
                 # Remove position from active positions and add to closed positions
                 active_long_positions.remove(position)
                 closed_long_positions.append(position)
 
         # ---- SHORT ACTIVE ORDERS
+        for position in active_short_positions.copy():
+            # Stop Loss or take profit Check
+            if price > position.sl or price < position.tp:
+                # Add profits / losses to capital
+                pnl = (position.price-price) * position.quantity
+                capital += pnl * (1-commission)
+                # Register exit price and if it was a win
+                position.exit_price = price
+                position.is_win = price < position.price # True if we closed with profit
+                # Remove position from active positions and add to closed positions
+                active_short_positions.remove(position)
+                closed_short_positions.append(position)
 
         # ---- CHECK FOR NEW LONG ORDERS
         if row.buy_signal:
             # Cacluate BTC position size based on capital fraction
             quantity = (capital * capital_fraction) / price
             cost = quantity * price * (1+commission)
-            # Do we have enough capital cash?
+            # Do we have enough capital?
             if capital >= cost:
                 # Discount cash
                 capital -= cost
@@ -127,12 +142,33 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                     price=price,
                     sl=price * (1-stop_loss),
                     tp=price * (1+take_profit),
-                    time=row['Datetime']
+                    time=row['Datetime'],
+                    type='long'
                 )
                 active_long_positions.append(pos)
                 n_long_trades += 1
 
         # ---- CHECK FOR NEW SHORT ORDERS
+        if row.sell_signal:
+            # Cacluate BTC position size based on capital fraction
+            quantity = (capital*capital_fraction) / price
+            cost = quantity * price * (1+commission)
+            # Do we have enough capital?
+            if capital >= cost:
+                # Discount cash
+                capital -= cost
+                # Add position to portfolio
+                pos = Position(
+                    ticker='BTCUSDT',
+                    quantity=quantity,
+                    price=price,
+                    sl=price * (1+stop_loss),
+                    tp=price * (1-take_profit),
+                    time=row['Datetime'],
+                    type='short'
+                )
+                active_short_positions.append(pos)
+                n_short_trades += 1
 
         current_value = get_portfolio_value(capital, active_long_positions, active_short_positions, price)
         portfolio_value.append(current_value)
@@ -145,6 +181,13 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
         capital += last_price * position.quantity * (1-commission)
         closed_long_positions.append(position)
     active_long_positions = []
+
+    for position in active_short_positions:
+        position.exit_price = last_price
+        position.is_win = last_price < position.price
+        capital += (position.price - last_price) * position.quantity * (1-commission)
+        closed_short_positions.append(position)
+    active_short_positions = []
 
     df = pd.DataFrame({'Value': portfolio_value})
     df['rets'] = df.Value.pct_change()

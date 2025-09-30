@@ -50,9 +50,8 @@ def get_maximum_drawdown(data: pd.DataFrame) -> float:
         float: The maximum drawdown of the portfolio.
     """
     roll_max = data['Value'].cummax()
-    drawdown = (data['Value'] - roll_max) / roll_max
-    max_drawdown = drawdown.min()
-    return abs(max_drawdown)
+    max_drawdown = (roll_max - data['Value']) / roll_max
+    return max_drawdown.max()
 
 
 def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
@@ -65,15 +64,10 @@ def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
     Returns:
         calmar_ratio (float): The Calmar ratio of the portfolio.
     """
-    total_return = data['Value'].iloc[-1] / data['Value'].iloc[0] - 1
-    n_years = len(data) / periods_per_year
-    cagr = (1 + total_return) ** (1 / n_years) - 1
-
-    roll_max = data['Value'].cummax()
-    drawdown = (data['Value'] - roll_max) / roll_max
-    max_drawdown = drawdown.min()
-
-    return cagr / abs(max_drawdown) if max_drawdown != 0 else 0
+    mean = data.rets.mean()
+    annual_rets = mean * periods_per_year
+    max_drawdown = get_maximum_drawdown(data)
+    return annual_rets / max_drawdown if max_drawdown != 0 else 0
 
 
 def get_win_rate(closed_positions: list) -> float:
