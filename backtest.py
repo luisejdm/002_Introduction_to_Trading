@@ -14,7 +14,7 @@ class Position:
 
     Attributes:
         ticker (str): The ticker symbol of the asset.
-        quantity (float):
+        quantity (float): The quantity of the asset held in the position.
         price (pd.Series): The entry price of the position.
         sl (float): The stop-loss price.
         tp (float): The take-profit price.
