@@ -30,7 +30,7 @@ def plot_training_portfolio_value(portfolio_values: list, dates: list) -> None:
     plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
-    # plt.xticks(rotation=45)
+    plt.xticks(rotation=45)
     plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}'))
     plt.legend(loc='best')
     plt.show()
