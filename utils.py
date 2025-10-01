@@ -39,27 +39,27 @@ def clean_split_data(
 
 def get_portfolio_value(
         capital: float, long_positions: list, short_positions:list,
-        current_price: float
+        current_price: float, commission: float
 ) -> float:
     """
     Estimate the portfolio value.
-
     Args:
         capital (float): The current capital available.
         long_positions (list): A list of active long positions.
         short_positions (list): A list of active short positions.
         current_price (float): The current market price of the asset.
-
+        commission (float): Commission
     Returns:
         float: The total portfolio value.
     """
     value = capital
     # Long positions value
     for position in long_positions:
-        value += position.quantity * current_price
+        value += position.quantity * current_price * (1-commission)
 
     # Short positions value
     for position in short_positions:
-        value += position.quantity * (position.price - current_price)
+        pnl = (position.price-current_price) * position.quantity * (1-commission)
+        value += position.cost + pnl
 
     return value

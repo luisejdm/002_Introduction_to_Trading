@@ -1,40 +1,50 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import numpy as np
 import seaborn as sns
 sns.set_theme()
 
-plt.rcParams['figure.figsize'] = [12, 6]
+plt.rcParams['figure.figsize'] = [14, 8]
 plt.rcParams['axes.titlesize'] = 16
 plt.rcParams['axes.labelsize'] = 13
 plt.rcParams['axes.titleweight'] = 'bold'
 plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['grid.alpha'] = 0.3
+plt.rcParams['grid.alpha'] = 0.5
+plt.rcParams['grid.linestyle'] = '--'
+plt.rcParams['legend.fontsize'] = 13
+plt.rcParams['legend.loc'] = 'best'
+plt.rcParams['legend.fancybox'] = True
 
 
 # Plot training portfolio value
-def plot_training_portfolio_value(portfolio_values: list) -> None:
+def plot_training_portfolio_value(portfolio_values: list, dates: list) -> None:
     """
     Plot the portfolio value over time for the training set.
     Args:
         portfolio_values: list: portfolio values from the training set
+        dates: list: corresponding dates for the portfolio values
     Returns:
-
     """
     plt.figure()
-    plt.plot(portfolio_values, label='Training Portfolio Value', color='#13283A')
+    plt.plot(dates, portfolio_values, label='Training Portfolio Value', color='#313131', lw=2)
     plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
+    # plt.xticks(rotation=45)
+    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}'))
     plt.legend(loc='best')
     plt.show()
 
-def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list,) -> None:
+def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list,
+                         test_dates: list, valid_dates: list) -> None:
     """
     Plot the portfolio value over time for both test and validation sets.
 
     Args:
         test_portfolio_value: list: portfolio values from the test set
         valid_portfolio_value: list: portfolio values from the validation set
+        test_dates: list: corresponding dates for the test portfolio values
+        valid_dates: list: corresponding dates for the validation portfolio values
     Returns:
 
     """
@@ -45,10 +55,12 @@ def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list
     combined_values = np.concatenate([test_values, valid_adjusted[1:]])
 
     plt.figure()
-    plt.plot(np.arange(len(test_values)), test_values, label='Test', color='#2E76AC')
-    plt.plot(np.arange(len(test_values)-1, len(combined_values)), combined_values[len(test_values)-1:], label='Validation', color='#218239')
+    plt.plot(test_dates, test_values, label='Test', color='#2E76AC', lw=2)
+    plt.plot(valid_dates, valid_values, label='Validation', color='#218239', lw=2)
     plt.title('Portfolio Value (TEST & VALIDATION SETS)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
+    plt.xticks(rotation=45)
+    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}'))
     plt.legend(loc='best')
     plt.show()

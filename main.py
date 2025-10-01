@@ -3,16 +3,23 @@ from optimizer import optimize_hyperparameters
 from utils import clean_split_data
 from prints import print_best_params, print_metrics
 from backtest import run_backtest
-from visualization import plot_portfolio_value, plot_training_portfolio_value
+from visualization import plot_training_portfolio_value, plot_portfolio_value
 
 import pandas as pd
 
 data = pd.read_csv('Binance_BTCUSDT_1h.csv')
 train_data, test_data, validation_data = clean_split_data(data, 0.6, 0.2, 0.2)
 
+# Get dates for plotting
+train_dates = pd.concat([train_data['Datetime'], test_data['Datetime'].iloc[:1]]).tolist()
+test_dates = pd.concat([train_data['Datetime'].iloc[-1:], test_data['Datetime']]).tolist()
+valid_dates = pd.concat([test_data['Datetime'].iloc[-1:], validation_data['Datetime']]).tolist()
+
 initial_capital = 1_000_000
 optimization_metric = 'Calmar' # 'Sharpe', 'Sortino', 'Calmar'
-n_trials = 50
+n_trials = 1 # Number of optimization trials
+n_splits = 5 # For time series cross-validation
+
 
 def main():
     # ---- Backtest and optimization configurations
@@ -25,6 +32,7 @@ def main():
         direction='maximize',
         n_jobs=-1,
         show_progress_bar=True,
+        n_splits=n_splits
     )
 
     # ---- Optimize hyperparameters
@@ -36,7 +44,7 @@ def main():
     )
     best_params = study.best_params
     best_value = study.best_value
-    print(f'\n {'=' * 50}\nBest {optimization_metric}: {best_value:.4f}')
+    print(f'\n{'=' * 50}\nBest {optimization_metric}: {best_value:.4f}')
     print_best_params(best_params)
 
     # ---- Run backtest on training data with best hyperparameters
@@ -53,7 +61,7 @@ def main():
         train_metrics, initial_capital, train_capital, 'train',
         train_n_long_trades, train_n_short_trades
     )
-    plot_training_portfolio_value(train_portfolio_value)
+    plot_training_portfolio_value(train_portfolio_value, train_dates)
 
     # ---- Evaluation on test set
     test_backtest_config = BacktestConfig(
@@ -83,10 +91,10 @@ def main():
     print_metrics(
         valid_metrics, test_capital, valid_capital, 'validation',
         valid_n_long_trades, valid_n_short_trades
-    ) # Initial capital from the test set
-
-    # ---- Plot portfolio value over test and validation sets
-    plot_portfolio_value(test_portfolio_value, valid_portfolio_value)
+    )
+    plot_portfolio_value(
+        test_portfolio_value, valid_portfolio_value, test_dates, valid_dates
+    )
 
 
 if __name__ == '__main__':

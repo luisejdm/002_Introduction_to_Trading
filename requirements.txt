@@ -4,3 +4,4 @@ ta
 optuna
 seaborn
 matplotlib
+scikit-learn

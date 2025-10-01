@@ -74,7 +74,7 @@ def get_win_rate(closed_positions: list) -> float:
     """
     Calculate the win rate of trades of the portfolio.
     Args:
-        closed_positions (list): A list of the closed positions.
+        ›closed_positions (list): A list of the closed positions.
 
     Returns:
         win_rate (float): The win rate of the trades.

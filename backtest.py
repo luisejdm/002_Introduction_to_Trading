@@ -14,11 +14,12 @@ class Position:
 
     Attributes:
         ticker (str): The ticker symbol of the asset.
-        quantity (float): The number of shares in the position.
+        quantity (float):
         price (pd.Series): The entry price of the position.
         sl (float): The stop-loss price.
         tp (float): The take-profit price.
         time (pd.Series): The time the position was opened.
+        cost (float): The cost of the position.
         is_win (bool): Indicates if the position was closed at a profit.
         exit_price (float): The price at which the position was closed.
         type (str): The type of position ('long' or 'short').
@@ -29,12 +30,28 @@ class Position:
     sl: float
     tp: float
     time: pd.Series
+    cost: float
     is_win: bool = None
     exit_price: float = None
     type: str = None
 
 
-def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> tuple:
+def run_backtest(
+        data: pd.DataFrame,  config: BacktestConfig, params: dict
+) -> tuple[dict, int, int, list, float]:
+    """
+    Backtest a trading strategy on historical data.
+    Args:
+        data (pd.DataFrame): The historical price data for backtesting.
+        config (BacktestConfig): Configuration for the backtest.
+        params (dict): Hyperparameters for the trading strategy.
+    Returns:
+        metrics (dict): A dictionary containing performance metrics.
+        n_long_trades (int): The number of long trades executed.
+        n_short_trades (int): The number of short trades executed.
+        portfolio_value (list): The portfolio value over time.
+        final_capital (float): The final capital after backtesting.
+    """
     data = data.copy()
     data['Close'] = data['Close'].astype(float)
 
@@ -60,7 +77,10 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     capital_fraction = params['capital_fraction']
 
     # Calculate indicators and signals
-    rsi = get_rsi(data, rsi_window)
+    rsi_buy, rsi_sell = get_rsi(data,
+                                rsi_window,
+                                rsi_lower,
+                                rsi_upper)
     ema_buy, ema_sell = get_ema_signals(data,
                                         ema_short_window,
                                         ema_long_window)
@@ -70,8 +90,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                                    macd_signal_window)
 
     # Add signals to DataFrame
-    data['rsi_buy'] = rsi < rsi_lower
-    data['rsi_sell'] = rsi > rsi_upper
+    data['rsi_buy'] = rsi_buy
+    data['rsi_sell'] = rsi_sell
 
     data['ema_buy'] = ema_buy
     data['ema_sell'] = ema_sell
@@ -117,8 +137,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
             # Stop Loss or take profit Check
             if price > position.sl or price < position.tp:
                 # Add profits / losses to capital
-                pnl = (position.price-price) * position.quantity
-                capital += pnl * (1-commission)
+                pnl = (position.price-price) * position.quantity * (1-commission)
+                capital += position.cost + pnl
                 # Register exit price and if it was a win
                 position.exit_price = price
                 position.is_win = price < position.price # True if we closed with profit
@@ -143,6 +163,7 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                     sl=price * (1-stop_loss),
                     tp=price * (1+take_profit),
                     time=row['Datetime'],
+                    cost=cost,
                     type='long'
                 )
                 active_long_positions.append(pos)
@@ -165,16 +186,20 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
                     sl=price * (1+stop_loss),
                     tp=price * (1-take_profit),
                     time=row['Datetime'],
+                    cost=cost,
                     type='short'
                 )
                 active_short_positions.append(pos)
                 n_short_trades += 1
 
-        current_value = get_portfolio_value(capital, active_long_positions, active_short_positions, price)
+        current_value = get_portfolio_value(
+            capital, active_long_positions, active_short_positions, price, commission
+        )
         portfolio_value.append(current_value)
 
     #At the end of the backtesting, we should close all active positions
     last_price = data.iloc[-1].Close
+
     for position in active_long_positions:
         position.exit_price = last_price
         position.is_win = last_price > position.price
@@ -185,7 +210,8 @@ def run_backtest(data: pd.DataFrame,  config: BacktestConfig, params: dict) -> t
     for position in active_short_positions:
         position.exit_price = last_price
         position.is_win = last_price < position.price
-        capital += (position.price - last_price) * position.quantity * (1-commission)
+        pnl = (position.price-last_price) * position.quantity * (1-commission)
+        capital += position.cost + pnl
         closed_short_positions.append(position)
     active_short_positions = []
 

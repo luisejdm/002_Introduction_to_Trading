@@ -1,10 +1,3 @@
-def print_separator():
-    """
-    Print a separator line for better readability in the console output.
-    """
-    print('\n' + '=' * 50)
-
-
 def print_best_params(best_params: dict) -> None:
     """
     Print the best hyperparameters.
@@ -12,7 +5,7 @@ def print_best_params(best_params: dict) -> None:
     Args:
         best_params (dict): The best hyperparameters found during optimization.
     """
-    print_separator()
+    print('\n' + '=' * 50)
     print('\nBest Hyperparameters:')
     for param, value in best_params.items():
         if isinstance(value, float):
@@ -36,7 +29,7 @@ def print_metrics(
         n_long_trades (int): Number of long trades executed.
         n_short_trades (int): Number of short trades executed.
     """
-    print_separator()
+    print('\n' + '=' * 50)
     print(f'\nPerformance Metrics on {data_set}:')
     for metric, value in metrics.items():
         print(f'  {metric}: {value:.4f}')
