@@ -17,7 +17,7 @@ valid_dates = pd.concat([test_data['Datetime'].iloc[-1:], validation_data['Datet
 
 initial_capital = 1_000_000
 optimization_metric = 'Calmar' # 'Sharpe', 'Sortino', 'Calmar'
-n_trials = 200 # Number of optimization trials
+n_trials = 50 # Number of optimization trials
 n_splits = 5 # For time series cross-validation
 
 

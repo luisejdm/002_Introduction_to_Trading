@@ -148,7 +148,7 @@ def run_backtest(
 
         # ---- CHECK FOR NEW LONG ORDERS
         if row.buy_signal:
-            # Cacluate BTC position size based on capital fraction
+            # Calculate BTC position size based on capital fraction
             quantity = (capital * capital_fraction) / price
             cost = quantity * price * (1+commission)
             # Do we have enough capital?
@@ -171,7 +171,7 @@ def run_backtest(
 
         # ---- CHECK FOR NEW SHORT ORDERS
         if row.sell_signal:
-            # Cacluate BTC position size based on capital fraction
+            # Calculate BTC position size based on capital fraction
             quantity = (capital*capital_fraction) / price
             cost = quantity * price * (1+commission)
             # Do we have enough capital?

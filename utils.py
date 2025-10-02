@@ -5,13 +5,11 @@ def clean_split_data(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Clean the input DataFrame by removing rows with NaN values and fixing Datetime.
-
     Args:
         data (pd.DataFrame): The input data to be cleaned.
         train (float): Proportion of data to be used for training.
         test (float): Proportion of data to be used for testing.
         validation (float): Proportion of data to be used for validation.
-
     Returns:
         Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: The cleaned and split data.
     """

@@ -75,7 +75,7 @@ def cross_validated_objective(
         'stop_loss': trial.suggest_float('stop_loss', 0.01, 0.15),
         'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
         'capital_fraction': trial.suggest_float('capital_fraction', 0.01, 0.02)
-        # 'n_shares': trial.suggest_int('n_shares', 1, 50)
+        #'n_shares': trial.suggest_int('n_shares', 1, 50) # Uncomment if needed
     }
     tscv = TimeSeriesSplit(n_splits=n_splits)
     scores = []
@@ -104,7 +104,7 @@ def optimize_hyperparameters(
     """
     print("\nStarting hyperparameter optimization...\n")
 
-    def objective(trial):
+    def objective(trial):  # If no cross-validation, use create_objective
         return cross_validated_objective(
             trial, data, backtest_config,
             optimization_config.n_splits, metric

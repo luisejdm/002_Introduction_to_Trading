@@ -1,7 +1,6 @@
 def print_best_params(best_params: dict) -> None:
     """
     Print the best hyperparameters.
-
     Args:
         best_params (dict): The best hyperparameters found during optimization.
     """
@@ -20,7 +19,6 @@ def print_metrics(
 ) -> None:
     """
     Print the performance metrics.
-
     Args:
         metrics (dict): A dictionary containing performance metrics.
         initial_capital (float): The initial capital before backtesting.

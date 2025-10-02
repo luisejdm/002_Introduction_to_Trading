@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
+import matplotlib.ticker as mtick # For formatting y-axis with commas
 import numpy as np
 import seaborn as sns
 sns.set_theme()
@@ -26,12 +26,12 @@ def plot_training_portfolio_value(portfolio_values: list, dates: list) -> None:
     Returns:
     """
     plt.figure()
-    plt.plot(dates, portfolio_values, label='Training Portfolio Value', color='#313131', lw=2)
+    plt.plot(dates, portfolio_values, label='Portfolio Value on Training Set', color='#313131', lw=2)
     plt.title('Portfolio Value (TRAINING SET)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
     plt.xticks(rotation=45)
-    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}'))
+    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}')) # For formatting y-axis with commas
     plt.legend(loc='best')
     plt.show()
 
@@ -55,12 +55,12 @@ def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list
     combined_values = np.concatenate([test_values, valid_adjusted[1:]])
 
     plt.figure()
-    plt.plot(test_dates, test_values, label='Test', color='#2E76AC', lw=2)
-    plt.plot(valid_dates, valid_values, label='Validation', color='#218239', lw=2)
-    plt.title('Portfolio Value (TEST & VALIDATION SETS)')
+    plt.plot(test_dates, test_values, label='Test', color='#2E457B', lw=2)
+    plt.plot(valid_dates, valid_values, label='Validation', color='#205c2e', lw=2)
+    plt.title('Portfolio Value on Test and Validation Sets)')
     plt.ylabel('Portfolio Value ($)')
     plt.xlabel('Time Steps')
     plt.xticks(rotation=45)
-    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}'))
+    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}')) # For formatting y-axis with commas
     plt.legend(loc='best')
     plt.show()
