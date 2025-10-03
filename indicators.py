@@ -148,8 +148,8 @@ def get_signals(data: pd.DataFrame, params: dict) -> pd.DataFrame:
         df, params['bollinger_window'], params['bollinger_num_std_dev']
     )
     df['stochastic_buy'], df['stochastic_sell'] = get_stochastic_oscillator(
-        df, params['k_window'], params['smooth_window'],
-        params['lower_threshold'], params['upper_threshold']
+        df, params['stoch_k_window'], params['stoch_smooth_window'],
+        params['stoch_lower_threshold'], params['stoch_upper_threshold']
     )
     # Combine signals
     df['buy_signal'] = (df[[

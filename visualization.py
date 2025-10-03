@@ -26,10 +26,10 @@ def plot_training_portfolio_value(portfolio_values: list, dates: list) -> None:
     Returns:
     """
     plt.figure()
-    plt.plot(dates, portfolio_values, label='Portfolio Value on Training Set', color='#313131', lw=2)
-    plt.title('Portfolio Value (TRAINING SET)')
+    plt.plot(dates, portfolio_values, label='Portfolio Value', color='#313131', lw=2)
+    plt.title('Portfolio Value on Training Set')
     plt.ylabel('Portfolio Value ($)')
-    plt.xlabel('Time Steps')
+    plt.xlabel('Date')
     plt.xticks(rotation=45)
     plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}')) # For formatting y-axis with commas
     plt.legend(loc='best')
@@ -58,10 +58,10 @@ def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list
     plt.figure()
     plt.plot(test_dates, test_values, label='Test', color='#2E457B', lw=2)
     plt.plot(valid_dates, valid_values, label='Validation', color='#205c2e', lw=2)
-    plt.title('Portfolio Value on Test and Validation Sets)')
+    plt.title('Portfolio Value on Test and Validation Sets')
     plt.ylabel('Portfolio Value ($)')
-    plt.xlabel('Time Steps')
+    plt.xlabel('Date')
     plt.xticks(rotation=45)
     plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}')) # For formatting y-axis with commas
-    plt.legend(loc='best')
+    plt.legend(loc='best', title='Sets')
     plt.show()

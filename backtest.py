@@ -26,7 +26,7 @@ class Position:
     price: float
     sl: float
     tp: float
-    time: pd.Series
+    time: pd.Timestamp
     is_win: bool = None
     type: str = None
 
@@ -53,8 +53,8 @@ def run_backtest(
     # Get parameters
     stop_loss = params['stop_loss']
     take_profit = params['take_profit']
-    #capital_fraction = params['capital_fraction']
-    n_shares = params['n_shares'] # If n_shares is needed in the future
+    capital_fraction = params['capital_fraction']
+    #n_shares = params['n_shares'] # If n_shares is needed in the future
 
     # Get Signals
     data = get_signals(data, params)
@@ -74,7 +74,7 @@ def run_backtest(
     closed_short_positions: list[Position] = []
 
     # Start backtesting
-    for i, row in data.iterrows():
+    for row in data.itertuples():
         price = row.Close
         # ---- LONG ACTIVE ORDERS
         for position in active_long_positions.copy():
@@ -104,8 +104,8 @@ def run_backtest(
         # ---- CHECK FOR NEW LONG ORDERS
         if row.buy_signal:
             # Calculate BTC position size based on capital fraction
-            #quantity = (capital * capital_fraction) / price
-            quantity = n_shares # If n_shares is needed in the future
+            quantity = (capital * capital_fraction) / price
+            #quantity = n_shares # If n_shares is needed in the future
             cost = quantity * price * (1+commission)
             # Do we have enough capital?
             if capital >= cost:
@@ -118,7 +118,7 @@ def run_backtest(
                     price=price,
                     sl=price * (1-stop_loss),
                     tp=price * (1+take_profit),
-                    time=row['Datetime'],
+                    time=row.Datetime,
                     type='long'
                 )
                 active_long_positions.append(pos)
@@ -127,8 +127,8 @@ def run_backtest(
         # ---- CHECK FOR NEW SHORT ORDERS
         if row.sell_signal:
             # Calculate BTC position size based on capital fraction
-            #quantity = (capital*capital_fraction) / price
-            quantity = n_shares # If n_shares is needed in the future
+            quantity = (capital*capital_fraction) / price
+            #quantity = n_shares # If n_shares is needed in the future
             cost = quantity * price * (1+commission)
             # Do we have enough capital?
             if capital >= cost:
@@ -141,7 +141,7 @@ def run_backtest(
                     price=price,
                     sl=price * (1+stop_loss),
                     tp=price * (1-take_profit),
-                    time=row['Datetime'],
+                    time=row.Datetime,
                     type='short'
                 )
                 active_short_positions.append(pos)
