@@ -1,7 +1,7 @@
 from config import BacktestConfig, OptimizationConfig
 from optimizer import optimize_hyperparameters
-from utils import clean_split_data
-from prints import print_best_params, print_metrics
+from utils import clean_split_data, get_returns_table
+from prints import print_best_params, print_metrics, print_returns_tables
 from backtest import run_backtest
 from visualization import plot_training_portfolio_value, plot_portfolio_value
 
@@ -17,11 +17,13 @@ valid_dates = pd.concat([test_data['Datetime'].iloc[-1:], validation_data['Datet
 
 initial_capital = 1_000_000
 optimization_metric = 'Calmar' # 'Sharpe', 'Sortino', 'Calmar'
-n_trials = 50 # Number of optimization trials
-n_splits = 5 # For time series cross-validation
+n_trials = 10 # Number of optimization trials
+n_splits = 2 # For time series cross-validation
 
 
 def main():
+    print('\nBacktesting started...\n')
+    print('=' * 50)
     # ---- Backtest and optimization configurations
     backtest_config = BacktestConfig(
         initial_capital = initial_capital,
@@ -44,7 +46,7 @@ def main():
     )
     best_params = study.best_params
     best_value = study.best_value
-    print(f'\n{'=' * 50}\nBest {optimization_metric}: {best_value:.4f}')
+    print(f'\n{'=' * 50}\n\nBest {optimization_metric}: {best_value:.4f}')
     print_best_params(best_params)
 
     # ---- Run backtest on training data with best hyperparameters
@@ -73,10 +75,13 @@ def main():
         config=test_backtest_config,
         params=best_params
     )
+    # Printing test results
+    test_returns = get_returns_table(test_portfolio_value, test_dates)
     print_metrics(
         test_metrics, initial_capital, test_capital, 'test',
         test_n_long_trades, test_n_short_trades
     )
+    print_returns_tables(test_returns)
 
     # ---- Evaluation on validation set
     valid_backtest_config = BacktestConfig(
@@ -88,13 +93,20 @@ def main():
         config = valid_backtest_config,
         params = best_params
     )
+    # Printing validation results
+    valid_returns = get_returns_table(valid_portfolio_value, valid_dates)
     print_metrics(
         valid_metrics, test_capital, valid_capital, 'validation',
         valid_n_long_trades, valid_n_short_trades
     )
+    print_returns_tables(valid_returns)
+
+    # ---- Plot test and validation portfolio values
     plot_portfolio_value(
         test_portfolio_value, valid_portfolio_value, test_dates, valid_dates
     )
+    print('\n' + '=' * 50)
+    print('\nBacktesting completed.\n')
 
 
 if __name__ == '__main__':

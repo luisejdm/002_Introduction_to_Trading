@@ -35,6 +35,7 @@ def plot_training_portfolio_value(portfolio_values: list, dates: list) -> None:
     plt.legend(loc='best')
     plt.show()
 
+
 def plot_portfolio_value(test_portfolio_value: list, valid_portfolio_value: list,
                          test_dates: list, valid_dates: list) -> None:
     """

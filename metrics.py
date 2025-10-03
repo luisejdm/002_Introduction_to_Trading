@@ -72,15 +72,42 @@ def get_calmar(data: pd.DataFrame, periods_per_year: int = 365*24) -> float:
 
 def get_win_rate(closed_positions: list) -> float:
     """
-    Calculate the win rate of trades of the portfolio.
+    Calculate the win rate of closed positions.
     Args:
-        ›closed_positions (list): A list of the closed positions.
-
+        closed_positions (list): A list of closed Position objects.
     Returns:
-        win_rate (float): The win rate of the trades.
+        float: The win rate of the closed positions.
     """
     if not closed_positions:
         return 0
 
-    n_wins = sum(1 for pos in closed_positions if pos.is_win)
-    return n_wins / len(closed_positions)
+    wins = sum(1 for position in closed_positions if position.is_win)
+    return wins / len(closed_positions)
+
+
+def get_metrics(
+        portfolio_value: list, closed_long_positions: list, closed_short_position: list
+) -> dict:
+    """
+    Calculate various performance metrics for the backtest.
+    Args:
+        portfolio_value (list): A DataFrame containing the portfolio values over time.
+        closed_long_positions (list): A list of closed long Position objects.
+        closed_short_position (list): A list of closed short Position objects.
+    Returns:
+        metrics (dict): A dictionary containing various performance metrics.
+    """
+    df = pd.DataFrame({'Value': portfolio_value})
+    df['rets'] = df.Value.pct_change()
+    df.dropna(inplace=True)
+
+    metrics = {
+        'Sharpe': get_sharpe(df),
+        'Sortino': get_sortino(df),
+        'Maximum Drawdown': get_maximum_drawdown(df),
+        'Calmar': get_calmar(df),
+        'Win rate on long positions': get_win_rate(closed_long_positions),
+        'Win rate on short positions': get_win_rate(closed_short_position),
+        'General win rate': get_win_rate(closed_long_positions + closed_short_position)
+    }
+    return metrics

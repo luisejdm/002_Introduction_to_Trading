@@ -40,7 +40,7 @@ def get_portfolio_value(
         current_price: float, commission: float
 ) -> float:
     """
-    Estimate the portfolio value.
+    Estimate the portfolio value for graphing purposes.
     Args:
         capital (float): The current capital available.
         long_positions (list): A list of active long positions.
@@ -53,11 +53,41 @@ def get_portfolio_value(
     value = capital
     # Long positions value
     for position in long_positions:
-        value += position.quantity * current_price * (1-commission)
+        value += position.quantity * current_price # No commision since position is still open
 
     # Short positions value
     for position in short_positions:
-        pnl = (position.price-current_price) * position.quantity * (1-commission)
-        value += position.cost + pnl
+        pnl = (position.price-current_price) * position.quantity # No commision since position is still open
+        value += position.price * position.quantity + pnl
 
     return value
+
+
+def get_returns_table(portfolio_value: list, dates: list) -> dict:
+    """
+    Calculate monthly, quarterly, and annual returns from portfolio value data.
+    Args:
+        portfolio_value (pd.DataFrame): A DataFrame containing 'Datetime' and 'Value'
+        dates (list): A list of datetime objects corresponding to the portfolio values.
+    Returns:
+        results (dict): A dictionary containing DataFrames for monthly, quarterly, and annual returns.
+    """
+    df = pd.DataFrame({
+        'Datetime': dates,
+        'Value': portfolio_value
+    }).set_index('Datetime')
+    df['Returns'] = df['Value'].pct_change()
+
+    frequency = {
+        'ME': 'Monthly Returns',
+        'QE': 'Quarterly Returns',
+        'YE': 'Annual Returns'
+    }
+
+    results = {}
+    for freq, label in frequency.items():
+        temp = df['Returns'].resample(freq).apply(lambda x: (1 + x).prod() - 1).to_frame(name=label)
+        temp.index = temp.index.strftime('%d-%m-%Y')
+        results[label] = temp
+
+    return results

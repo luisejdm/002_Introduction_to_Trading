@@ -8,43 +8,6 @@ from config import BacktestConfig, OptimizationConfig
 from backtest import run_backtest
 
 
-# Optimization without cross-validation
-"""def create_objective(
-        data: pd.DataFrame, backtest_config: BacktestConfig, metric: str
-):
-    
-    Create an objective function for Optuna hyperparameter optimization.
-    Args:
-        data (pd.DataFrame): The historical price data for backtesting.
-        backtest_config (BacktestConfig): Configuration for the backtest.
-        metric (str): The performance metric to optimize ('Sharpe', 'Sortino', 'Calmar').
-    Returns:
-        function: An objective function that Optuna can use for optimization.
-    
-    def objective(trial):
-        params = {
-            'rsi_window': trial.suggest_int('rsi_window', 8, 50),
-            'rsi_lower': trial.suggest_int('rsi_lower', 5, 35),
-            'rsi_upper': trial.suggest_int('rsi_upper', 65, 95),
-
-            'ema_short_window': trial.suggest_int('ema_short_window', 5, 20),
-            'ema_long_window': trial.suggest_int('ema_long_window', 21, 100),
-
-            'macd_short_window': trial.suggest_int('macd_short_window', 8, 20),
-            'macd_long_window': trial.suggest_int('macd_long_window', 21, 50),
-            'macd_signal_window': trial.suggest_int('macd_signal_window', 5, 20),
-
-            'stop_loss': trial.suggest_float('stop_loss', 0.01, 0.15),
-            'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
-            'capital_fraction': trial.suggest_float('capital_fraction', 0.01, 0.02)
-            #'n_shares': trial.suggest_int('n_shares', 1, 50)
-        }
-        metrics, _, _, _, _ = run_backtest(data, backtest_config, params)
-        return metrics[metric]
-
-    return objective"""
-
-
 def cross_validated_objective(
         trial, data: pd.DataFrame, backtest_config: BacktestConfig,
         n_splits: int, metric: str
@@ -72,10 +35,18 @@ def cross_validated_objective(
         'macd_long_window': trial.suggest_int('macd_long_window', 21, 50),
         'macd_signal_window': trial.suggest_int('macd_signal_window', 5, 20),
 
+        'bollinger_window': trial.suggest_int('bollinger_window', 10, 50),
+        'bollinger_num_std_dev': trial.suggest_float('bollinger_num_std_dev', 1.0, 3.0),
+
+        'k_window': trial.suggest_int("k_window", 5, 30)  ,
+        'smooth_window': trial.suggest_int("smooth_window", 2, 10),
+        'lower_threshold': trial.suggest_float("lower_threshold", 5, 30),
+        'upper_threshold': trial.suggest_float("upper_threshold", 70, 95),
+
         'stop_loss': trial.suggest_float('stop_loss', 0.01, 0.15),
         'take_profit': trial.suggest_float('take_profit', 0.01, 0.15),
-        'capital_fraction': trial.suggest_float('capital_fraction', 0.01, 0.02)
-        #'n_shares': trial.suggest_int('n_shares', 1, 50) # Uncomment if needed
+        #'capital_fraction': trial.suggest_float('capital_fraction', 0.01, 0.2)
+        'n_shares': trial.suggest_int('n_shares', 0.00001, 5) # If n_shares is needed in the future
     }
     tscv = TimeSeriesSplit(n_splits=n_splits)
     scores = []
@@ -106,8 +77,7 @@ def optimize_hyperparameters(
 
     def objective(trial):  # If no cross-validation, use create_objective
         return cross_validated_objective(
-            trial, data, backtest_config,
-            optimization_config.n_splits, metric
+            trial, data, backtest_config, optimization_config.n_splits, metric
         )
 
     study = optuna.create_study(

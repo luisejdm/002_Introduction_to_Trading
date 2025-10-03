@@ -37,3 +37,16 @@ def print_metrics(
     print(f'  Number of Short Trades: {n_short_trades}')
     print(f'  Net Profit: ${final_capital - initial_capital:,.4f}')
     print(f'  Return on Investment: {(final_capital - initial_capital) / initial_capital * 100:.4f}%')
+
+
+def print_returns_tables(returns_tables: dict) -> None:
+    """
+    Print the returns tables.
+    Args:
+        returns_tables (dict): A dictionary containing DataFrames for monthly, quarterly, and annual returns.
+    """
+    for period, table in returns_tables.items():
+        print(f'\n------ {period} ------')
+        # Convert values to percentage strings with 2 decimals
+        table_percent = table.map(lambda x: f"{x * 100:.4f}%")
+        print(table_percent.to_string(index=True))
