@@ -37,8 +37,8 @@ def get_ema_signals(
     ema_short = data['Close'].ewm(span=short_window, adjust=False).mean()
     ema_long = data['Close'].ewm(span=long_window, adjust=False).mean()
 
-    buy_signal = ema_short > ema_long
-    sell_signal = ema_short < ema_long
+    buy_signal = (ema_short > ema_long) & (ema_short.shift(1) <= ema_long.shift(1))
+    sell_signal = (ema_short < ema_long) & (ema_short.shift(1) >= ema_long.shift(1))
     return buy_signal, sell_signal
 
 
@@ -61,8 +61,8 @@ def get_macd(
     macd = ema_short - ema_long
     signal = macd.ewm(span=signal_window, adjust=False).mean()
 
-    buy_signal = macd > signal
-    sell_signal = macd < signal
+    buy_signal = (macd > signal) & (macd.shift(1) <= signal.shift(1))
+    sell_signal = (macd < signal) & (macd.shift(1) >= signal.shift(1))
     return buy_signal, sell_signal
 
 

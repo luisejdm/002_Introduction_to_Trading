@@ -34,7 +34,7 @@ def print_metrics(
 
 def print_returns_tables(
         returns_tables: dict, initial_capital: float,
-        final_capital: float, data_set: str
+        final_capital: float, data_set: str, buy_and_hold_roi: float
 ) -> None:
     """
     Print the returns tables.
@@ -43,6 +43,7 @@ def print_returns_tables(
         initial_capital (float): The initial capital before backtesting.
         final_capital (float): The final capital after backtesting.
         data_set (str): The dataset on which the returns were evaluated.
+        buy_and_hold_roi (float): The buy-and-hold return on investment for comparison.
     """
     for period, table in returns_tables.items():
         print(f'\n------ {period} ------')
@@ -55,3 +56,4 @@ def print_returns_tables(
     print(f'Final Capital: ${final_capital:,.4f}')
     print(f'Net Profit: ${final_capital - initial_capital:,.4f}')
     print(f'Total Return on Investment: {(final_capital - initial_capital) / initial_capital * 100:.4f}%')
+    print(f'Buy and Hold estrategy ROI for Comparison: {buy_and_hold_roi * 100:.4f}%')

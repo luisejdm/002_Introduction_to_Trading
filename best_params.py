@@ -6,24 +6,24 @@ def get_best_params() -> tuple[dict, float]:
         best_optimized_value (float): The best value of the optimization metric.
     """
     best_optimized_params = {
-        'rsi_window': 37,
-        'rsi_lower': 25,
-        'rsi_upper': 88,
-        'ema_short_window': 13,
-        'ema_long_window': 46,
-        'macd_short_window': 16,
-        'macd_long_window': 44,
-        'macd_signal_window': 8,
-        'bollinger_window': 11,
-        'bollinger_num_std_dev': 2.9481,
-        'stoch_k_window': 7,
-        'stoch_smooth_window': 3,
-        'stoch_lower_threshold': 29.2803,
-        'stoch_upper_threshold': 88.2503,
-        'stop_loss': 0.2445,
-        'take_profit': 0.2587,
-        'capital_fraction': 0.1378
-    }
-    best_optimized_value = 2.3685
+    'rsi_window': 10,
+    'rsi_lower': 40,
+    'rsi_upper': 90,
+    'ema_short_window': 9,
+    'ema_long_window': 75,
+    'macd_short_window': 8,
+    'macd_long_window': 71,
+    'macd_signal_window': 15,
+    'bollinger_window': 14,
+    'bollinger_num_std_dev': 1.7815,
+    'stoch_k_window': 11,
+    'stoch_smooth_window': 9,
+    'stoch_lower_threshold': 25.2229,
+    'stoch_upper_threshold': 94.9743,
+    'stop_loss': 0.2936,
+    'take_profit': 0.2846,
+    'capital_fraction': 0.1826
+}
+    best_optimized_value = 1.7013
 
     return best_optimized_params, best_optimized_value

@@ -17,9 +17,13 @@ train_dates = pd.concat([train_data['Datetime'], test_data['Datetime'].iloc[:1]]
 test_dates = pd.concat([train_data['Datetime'].iloc[-1:], test_data['Datetime']]).tolist()
 valid_dates = pd.concat([test_data['Datetime'].iloc[-1:], validation_data['Datetime']]).tolist()
 
+# Returns on investmen if buy and hold strategy for comparison
+roi_test = (test_data['Close'].iloc[-1] - test_data['Close'].iloc[0]) / test_data['Close'].iloc[0]
+roi_valid = (validation_data['Close'].iloc[-1] - validation_data['Close'].iloc[0]) / validation_data['Close'].iloc[0]
+
 initial_capital = 1_000_000
 optimization_metric = 'Calmar' # 'Sharpe', 'Sortino', 'Calmar'
-n_trials = 500 # Number of optimization trials
+n_trials = 200 # Number of optimization trials
 n_splits = 3 # For time series cross-validation
 
 use_best_params = True  # If True, use the best hyperparameters found in previous runs, else run a new optimization
@@ -73,10 +77,8 @@ def main():
         config=train_backtest_config,
         params=best_params
     )
-    print_metrics(
-        train_metrics, 'train', train_n_long_trades, train_n_short_trades
-    )
-    plot_training_portfolio_value(train_portfolio_value, train_dates)
+    print_metrics(train_metrics, 'train', train_n_long_trades, train_n_short_trades)
+    plot_training_portfolio_value(train_portfolio_value, train_dates, train_data)
 
     # ---- Evaluation on test set
     test_backtest_config = BacktestConfig(
@@ -90,14 +92,12 @@ def main():
     )
     # Printing test results
     test_returns = get_returns_table(test_portfolio_value, test_dates)
-    print_metrics(
-        test_metrics, 'test', test_n_long_trades, test_n_short_trades
-    )
-    print_returns_tables(test_returns, initial_capital, test_capital, 'Test')
+    print_metrics(test_metrics, 'test', test_n_long_trades, test_n_short_trades)
+    print_returns_tables(test_returns, initial_capital, test_capital, 'Test', roi_test)
 
     # ---- Evaluation on validation set
     valid_backtest_config = BacktestConfig(
-        initial_capital = test_capital, # Start with the capital from the test set
+        initial_capital = initial_capital, # Start with the capital from the test set
         commission = 0.125 / 100
     )
     valid_metrics, valid_n_long_trades, valid_n_short_trades, valid_portfolio_value, valid_capital = run_backtest(
@@ -107,14 +107,13 @@ def main():
     )
     # Printing validation results
     valid_returns = get_returns_table(valid_portfolio_value, valid_dates)
-    print_metrics(
-        valid_metrics, 'validation', valid_n_long_trades, valid_n_short_trades
-    )
-    print_returns_tables(valid_returns, test_capital, valid_capital, 'Validation')
+    print_metrics(valid_metrics, 'validation', valid_n_long_trades, valid_n_short_trades)
+    print_returns_tables(valid_returns, initial_capital, valid_capital, 'Validation', roi_valid)
 
     # ---- Plot test and validation portfolio values
     plot_portfolio_value(
-        test_portfolio_value, valid_portfolio_value, test_dates, valid_dates
+        test_portfolio_value, valid_portfolio_value, test_dates, valid_dates,
+        test_data, validation_data
     )
     print('\n' + '=' * 50)
     print('\nBacktesting completed.\n')

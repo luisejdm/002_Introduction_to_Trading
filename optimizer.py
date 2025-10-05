@@ -31,9 +31,9 @@ def cross_validated_objective(
         'ema_short_window': trial.suggest_int('ema_short_window', 5, 20),
         'ema_long_window': trial.suggest_int('ema_long_window', 21, 100),
 
-        'macd_short_window': trial.suggest_int('macd_short_window', 8, 20),
-        'macd_long_window': trial.suggest_int('macd_long_window', 21, 50),
-        'macd_signal_window': trial.suggest_int('macd_signal_window', 5, 20),
+        'macd_short_window': trial.suggest_int('macd_short_window', 5, 20),
+        'macd_long_window': trial.suggest_int('macd_long_window', 21, 100),
+        'macd_signal_window': trial.suggest_int('macd_signal_window', 5, 30),
 
         'bollinger_window': trial.suggest_int('bollinger_window', 10, 60),
         'bollinger_num_std_dev': trial.suggest_float('bollinger_num_std_dev', 0.5, 3.5),
