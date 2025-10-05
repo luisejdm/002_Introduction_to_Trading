@@ -36,7 +36,7 @@ This repository aims to the process of designing, implementing, and analyzing tr
 ## Technologies
 
 - **Primary language:** Python
-- Key libraries (suggested): pandas, numpy, matplotlib, ta-lib, scipy, scikit-learn, jupyter
+- Key libraries (suggested): pandas, numpy, matplotlib, ta-lib, scipy, scikit-learn, seaborn
 
 ## Install requirements
 
