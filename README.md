@@ -16,7 +16,7 @@ This repository aims to the process of designing, implementing, and analyzing tr
 - **Maximize Calmar Ratio**
 - **Dataset split:** 60% Train, 20% Test, 20% Validation
 
-## Requirements
+## Requirements of the project
 
 - Transaction fees: **0.125%**
 - No leverage
