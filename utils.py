@@ -51,16 +51,17 @@ def get_portfolio_value(
         float: The total portfolio value.
     """
     value = capital
-    # Long positions value
-    for position in long_positions:
-        value += position.quantity * current_price # No commision since position is still open
 
-    # Short positions value
-    for position in short_positions:
-        pnl = (position.price-current_price) * position.quantity # No commision since position is still open
-        value += position.price * position.quantity + pnl
+    long_val = sum([
+        pos.quantity * current_price for pos in long_positions
+    ])
 
-    return value
+    short_val = sum([
+        pos.quantity * (pos.price - current_price) + pos.price * pos.quantity
+        for pos in short_positions
+    ])
+
+    return value + long_val + short_val
 
 
 def get_returns_table(portfolio_value: list, dates: list) -> dict:
